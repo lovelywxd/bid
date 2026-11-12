@@ -1,0 +1,68 @@
+{
+  "version": "pilot-v1",
+  "id": "engineering-fixture-v1",
+  "scope": "engineering_fixture",
+  "materials": [
+    {
+      "id": "source-1",
+      "path": "evals/fixtures/probe-source.json",
+      "sha256": "f117b23f4b700525946d9bae7e18a6e59ba1d00328303bc7e132359f9b1c8d72",
+      "synthetic": true,
+      "role": "source"
+    }
+  ],
+  "chapter_types": [
+    "工程探针"
+  ],
+  "comparisons": [
+    {
+      "group": "A",
+      "description": "现行 Codex＋bid-writer Skill",
+      "material_ids": [
+        "source-1"
+      ],
+      "model_profile": null,
+      "max_requests": 9,
+      "max_cost": 900,
+      "confounds": [
+        "未运行真实对照；预算为合成计量单位"
+      ]
+    },
+    {
+      "group": "B",
+      "description": "增强 Codex＋同等结构化资料/检索/设计/检查",
+      "material_ids": [
+        "source-1"
+      ],
+      "model_profile": null,
+      "max_requests": 9,
+      "max_cost": 900,
+      "confounds": [
+        "未运行真实对照；预算为合成计量单位"
+      ]
+    },
+    {
+      "group": "C",
+      "description": "Harness 专用应用",
+      "material_ids": [
+        "source-1"
+      ],
+      "model_profile": null,
+      "max_requests": 9,
+      "max_cost": 900,
+      "confounds": [
+        "未运行真实对照；预算为合成计量单位"
+      ]
+    }
+  ],
+  "labels_status": "not_run",
+  "expert_reviewers": [],
+  "permission": {
+    "real_provider": false,
+    "business_data_egress": false,
+    "approved_by": null,
+    "purpose": null
+  },
+  "L3": "not_run",
+  "L4": "not_run"
+}

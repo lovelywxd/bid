@@ -1,0 +1,75 @@
+diff --git a/packages/llm/llm-deepseek/src/adapter.ts b/packages/llm/llm-deepseek/src/adapter.ts
+index a6129f26..70685564 100644
+--- a/packages/llm/llm-deepseek/src/adapter.ts
++++ b/packages/llm/llm-deepseek/src/adapter.ts
+@@ -17,6 +17,7 @@ import { translate } from './translate.ts'
+ import { providerError, providerErrorDetail } from './transport.ts'
+ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
+ import { resolveRequestImageTarget } from './request-pricing.ts'
++import { bidAdmit } from './bid-admission.ts'
+ 
+ /** DeepSeek provider using Messages content and native thinking replay. */
+ export class DeepSeekAdapter<C extends Connection = Connection> extends LlmAdapter {
+@@ -92,6 +93,9 @@ export class DeepSeekAdapter<C extends Connection = Connection> extends LlmAdapt
+     options: GenerateOptions<string>, connection: C, signal: AbortSignal, activity: () => void,
+   ): AsyncGenerator<StreamChunk> {
+     signal.throwIfAborted()
++    if (options.messages.some(message => message.content.some(block => block.type === 'image'))) {
++      throw new LlmError('Images and Files egress are disabled in the bid text profile', 'INVALID_CONFIG')
++    }
+     const { messages, versions } = await prepareImages(
+       options.messages, connection, options.model, this.dependencies.resolveAttachments?.(), this.imageAccess, signal,
+     )
+@@ -139,11 +143,15 @@ export class DeepSeekAdapter<C extends Connection = Connection> extends LlmAdapt
+             ? [MESSAGES_TOOL_CHANGES_BETA]
+             : [],
+         ]
+-        const response = await fetch(`${messagesApiRoot(connection.baseURL)}/messages`, {
++        const sendURL = `${messagesApiRoot(connection.baseURL)}/messages`
++        const bidRequestId = await bidAdmit(sendURL, extensions.payload, signal)
++        signal.throwIfAborted()
++        const response = await fetch(sendURL, {
+           method: 'POST', signal, body: extensions.payload, redirect: 'error',
+           headers: {
+             ...attributionHeaders(),
+             'content-type': 'application/json', 'accept': 'text/event-stream',
++            'x-bid-request-id': bidRequestId,
+             ...auth.headers,
+             'anthropic-version': '2023-06-01',
+             ...betas.length === 0 ? {} : { 'anthropic-beta': betas.join(',') },
+diff --git a/packages/llm/llm-deepseek/src/bid-admission.ts b/packages/llm/llm-deepseek/src/bid-admission.ts
+new file mode 100644
+index 00000000..f36c9a9c
+--- /dev/null
++++ b/packages/llm/llm-deepseek/src/bid-admission.ts
+@@ -0,0 +1,30 @@
++/** Local bid deployment's send-time admission. No model routing or retries. */
++import { randomUUID } from 'node:crypto'
++import { LlmError } from '@deepseek-ai/dsh-llm'
++
++/** Acquire one single-use permit for the exact serialized text request.
++ * @param url - actual Messages URL.
++ * @param payload - serialized provider payload.
++ * @param signal - request cancellation.
++ * @returns request ledger identity.
++ */
++export async function bidAdmit(url: string, payload: string, signal: AbortSignal): Promise<string> {
++  const api = process.env.BID_API_URL
++  const token = process.env.BID_TASK_TOKEN
++  // This downstream build is intentionally unusable outside an admitted task.
++  if (!api || !token || !process.env.BID_MODEL_URL) throw new LlmError('Admission unavailable', 'INVALID_CONFIG')
++  if (url !== process.env.BID_MODEL_URL || new URL(url).hostname !== '127.0.0.1') {
++    throw new LlmError('Only the local fixture endpoint is enabled', 'INVALID_CONFIG')
++  }
++  const wire: Record<string, unknown> = JSON.parse(payload)
++  // Image/Files and unmeasured extra egress paths remain disabled in phase one.
++  if (/"type"\s*:\s*"(?:image|file)"/u.test(payload)) throw new LlmError('Text only', 'INVALID_CONFIG')
++  const id = randomUUID()
++  const response = await fetch(`${api}/internal/admit`, {
++    method: 'POST', signal, redirect: 'error',
++    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
++    body: JSON.stringify({ request_id: id, payload: wire, purpose: 'generation' }),
++  })
++  if (!response.ok) throw new LlmError(`Admission denied: ${await response.text()}`, 'INVALID_CONFIG')
++  return id
++}

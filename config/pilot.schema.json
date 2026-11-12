@@ -1,0 +1,250 @@
+{
+  "$defs": {
+    "Comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ],
+          "title": "Group",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "material_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Material Ids",
+          "type": "array"
+        },
+        "model_profile": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model Profile"
+        },
+        "max_requests": {
+          "minimum": 0,
+          "title": "Max Requests",
+          "type": "integer"
+        },
+        "max_cost": {
+          "minimum": 0,
+          "title": "Max Cost",
+          "type": "integer"
+        },
+        "confounds": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Confounds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "group",
+        "description",
+        "material_ids",
+        "max_requests",
+        "max_cost",
+        "confounds"
+      ],
+      "title": "Comparison",
+      "type": "object"
+    },
+    "Material": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "synthetic": {
+          "title": "Synthetic",
+          "type": "boolean"
+        },
+        "role": {
+          "enum": [
+            "source",
+            "knowledge",
+            "label",
+            "expert_revision",
+            "holdout"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "sha256",
+        "synthetic",
+        "role"
+      ],
+      "title": "Material",
+      "type": "object"
+    },
+    "Permission": {
+      "additionalProperties": false,
+      "properties": {
+        "real_provider": {
+          "default": false,
+          "title": "Real Provider",
+          "type": "boolean"
+        },
+        "business_data_egress": {
+          "default": false,
+          "title": "Business Data Egress",
+          "type": "boolean"
+        },
+        "approved_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approved By"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
+        }
+      },
+      "title": "Permission",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": "pilot-v1",
+      "title": "Version",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "scope": {
+      "enum": [
+        "engineering_fixture",
+        "real_chapters",
+        "real_book",
+        "holdout"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "materials": {
+      "items": {
+        "$ref": "#/$defs/Material"
+      },
+      "title": "Materials",
+      "type": "array"
+    },
+    "chapter_types": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Chapter Types",
+      "type": "array"
+    },
+    "comparisons": {
+      "items": {
+        "$ref": "#/$defs/Comparison"
+      },
+      "maxItems": 3,
+      "minItems": 3,
+      "title": "Comparisons",
+      "type": "array"
+    },
+    "labels_status": {
+      "enum": [
+        "not_run",
+        "prepared",
+        "reviewed"
+      ],
+      "title": "Labels Status",
+      "type": "string"
+    },
+    "expert_reviewers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expert Reviewers",
+      "type": "array"
+    },
+    "permission": {
+      "$ref": "#/$defs/Permission"
+    },
+    "L3": {
+      "enum": [
+        "not_run",
+        "passed",
+        "failed",
+        "blocked"
+      ],
+      "title": "L3",
+      "type": "string"
+    },
+    "L4": {
+      "enum": [
+        "not_run",
+        "passed",
+        "failed",
+        "blocked"
+      ],
+      "title": "L4",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "id",
+    "scope",
+    "materials",
+    "chapter_types",
+    "comparisons",
+    "labels_status",
+    "expert_reviewers",
+    "permission",
+    "L3",
+    "L4"
+  ],
+  "title": "Pilot",
+  "type": "object"
+}

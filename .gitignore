@@ -1,0 +1,51 @@
+# System and editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local toolchain, dependencies and build output
+/.tools/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+node_modules
+dist/
+*.tsbuildinfo
+/runtime/builds/*
+!/runtime/builds/.gitkeep
+
+# Local business data, model sessions and generated evaluation evidence
+/data/
+/evals/results/*
+!/evals/results/.gitkeep
+*.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+
+# Test and analysis caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# Credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+/config/*.local.*

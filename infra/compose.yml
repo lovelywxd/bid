@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:17.2-alpine
+    environment:
+      POSTGRES_DB: bid_agent
+      POSTGRES_USER: bid_agent
+      POSTGRES_PASSWORD: local_fixture_only
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - bid_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bid_agent"]
+      interval: 3s
+      retries: 20
+volumes:
+  bid_pg:

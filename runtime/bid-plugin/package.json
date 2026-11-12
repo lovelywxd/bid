@@ -1,0 +1,7 @@
+{
+  "name": "bid-harness-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {"build": "node build.mjs", "typecheck": "node typecheck.mjs"},
+  "peerDependencies": {"@deepseek-ai/cordis": "0.2.2-rc.2", "@deepseek-ai/dsh-tools": "0.2.2-rc.2", "@deepseek-ai/dsh-llm": "0.2.2-rc.2"}
+}
